@@ -26,7 +26,7 @@ const start = () => {
       choices: ['*View all employees', 'View all employees by department', 'View all employees by manager', '*Add employee', 'Remove employee', '*Update employee role', 'Update employee manager', '*View all roles', '*Add role', 'Delete role', '*View all departments', '*Add department', 'Delete department', 'View budget by department'],
     })
     .then((answer) => {
-      // based on their answer, either call the bid or the post functions
+      // TODO: Starred options are required. Need to add all options on the menu
       if (answer.menuChoice === '*View all employees') {
         viewAllEmployees();
       } else if (answer.menuChoice === '*Add employee') {
@@ -47,6 +47,16 @@ const start = () => {
     });
 };
 
+const viewAllEmployees = () => {
+    const query = 'SELECT * from employee';
+    connection.query(
+        query,
+        (err, results) => {
+            if (err) throw err;
+            console.log(results); 
+        }
+    )
+};
 /*
 // function to handle posting new items up for auction
 const postAuction = () => {

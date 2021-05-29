@@ -28,17 +28,17 @@ const start = () => {
     .then((answer) => {
       // TODO: Starred options are required. Need to add all options on the menu
       if (answer.menuChoice === '*View all employees') {
-        viewAllEmployees();
+        viewAllTable('employee');
       } else if (answer.menuChoice === '*Add employee') {
         addEmployee();
       } else if (answer.menuChoice === '*Update employee role') {
           updateEmployeeRole();
       } else if (answer.menuChoice === '*View all roles') {
-          viewAllRoles();
+          viewAllTable('role');
       } else if (answer.menuChoice === '*Add role') {
           addRole();
       } else if (answer.menuChoice === '*View all departments') {
-          viewAllDepartments();
+          viewAllTable('department');
       } else if (answer.menuChoice === '*Add department') {
           addDepartment();
       } else {
@@ -47,10 +47,12 @@ const start = () => {
     });
 };
 
-const viewAllEmployees = () => {
-    const query = 'SELECT * from employee';
+const viewAllTable = (category) => {
+    const query = 'SELECT * from ??';
+    let table = category
     connection.query(
         query,
+        table,
         (err, results) => {
             if (err) throw err;
             console.log(results); 

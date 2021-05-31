@@ -23,22 +23,22 @@ const start = () => {
       name: 'menuChoice',
       type: 'list',
       message: 'What would you like to do?',
-      choices: ['*View all employees', 'View all employees by department', 'View all employees by manager', '*Add employee', 'Remove employee', '*Update employee role', 'Update employee manager', '*View all roles', '*Add role', 'Delete role', '*View all departments', '*Add department', 'Delete department', 'View budget by department'],
+      choices: ['*View all employees', 'View all employees by department', 'View all employees by manager', '*Add employee', 'Remove employee', '*Update employee role', 'Update employee manager', '*View all roles', '*Add role', 'Delete role', '*View all departments', '*Add department', 'Delete department', 'View budget by department', 'Exit'],
     })
     .then((answer) => {
       // TODO: Starred options are required. Need to add all options on the menu
       if (answer.menuChoice === '*View all employees') {
-        viewAllTable('employee');
+        viewAllTable('employee');//done
       } else if (answer.menuChoice === '*Add employee') {
         addEmployee();
       } else if (answer.menuChoice === '*Update employee role') {
           updateEmployeeRole();
       } else if (answer.menuChoice === '*View all roles') {
-          viewAllTable('role');
+          viewAllTable('role');//done
       } else if (answer.menuChoice === '*Add role') {
           addRole();
       } else if (answer.menuChoice === '*View all departments') {
-          viewAllTable('department');
+          viewAllTable('department');//done
       } else if (answer.menuChoice === '*Add department') {
           addDepartment();
       } else {
@@ -58,6 +58,89 @@ const viewAllTable = (category) => {
             console.log(results); 
         }
     )
+    start();
+};
+
+const addEmployee = () => {
+    connection.query('SELECT * from role', (err, results) => {
+        if (err) throw err;
+        connection.query('SELECT * from employee WHERE manager_id is null', (err, results2) => {
+            if (err) throw err;
+
+            inquirer
+            .prompt(
+            [
+            {
+              name: 'first_name',
+              type: 'input',
+              message: 'What is the employee\'s first name?'
+            },
+            {
+              name: 'last_name',
+              type: 'input',
+              message: 'What is the employee\'s last name?'
+            },
+            {
+                name: 'title',
+                type: 'list',
+                message: 'What is the employee\'s role?',
+                choices() {
+                    const choiceArray = [];
+                    results.forEach(({ title }) => {
+                      choiceArray.push(title);
+                    });
+                    return choiceArray;
+                  }
+            },
+            {
+                name: 'manager',
+                type: 'list',
+                message: 'Who is the employee\'s manager?',
+                choices() {
+                    const choiceArray = ['none'];
+                    results2.forEach(({ first_name, last_name }) => {
+                      choiceArray.push(`${first_name} ${last_name}`);
+                    });
+                    return choiceArray;
+                  }
+            }
+        ])
+            .then((answer) => {
+              // TODO: crate employee object and send in update query
+              var role_id;
+              var manager_id;
+
+              results.forEach((role) => {
+                if (role.title === answer.title){
+                    role_id = role.id;
+                }
+               })
+
+               results2.forEach((person) => {
+                if (`${person.first_name} ${person.last_name}` === answer.manager){
+                    manager_id = person.id;
+                }
+               })
+              let employee = {
+                  first_name: answer.first_name,
+                  last_name: answer.last_name,
+                  role_id: role_id,
+                  manager_id: manager_id
+              }
+              connection.query('INSERT INTO employee SET ?', employee, (err, res) => {
+                  if (err) throw err;
+                  console.log('Employee added');
+                  start();
+              })
+              
+                
+                
+            });
+        })
+
+    })
+    
+
 };
 /*
 // function to handle posting new items up for auction

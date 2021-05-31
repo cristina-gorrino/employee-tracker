@@ -30,7 +30,7 @@ const start = () => {
       if (answer.menuChoice === '*View all employees') {
         viewAllTable('employee');//done
       } else if (answer.menuChoice === '*Add employee') {
-        addEmployee();
+        addEmployee();//done
       } else if (answer.menuChoice === '*Update employee role') {
           updateEmployeeRole();
       } else if (answer.menuChoice === '*View all roles') {
@@ -40,7 +40,7 @@ const start = () => {
       } else if (answer.menuChoice === '*View all departments') {
           viewAllTable('department');//done
       } else if (answer.menuChoice === '*Add department') {
-          addDepartment();
+          addDepartment();//done
       } else {
         connection.end();
       }
@@ -142,6 +142,24 @@ const addEmployee = () => {
     
 
 };
+
+const addDepartment = () => {
+    inquirer
+    .prompt({
+        name: 'departmentName',
+        type: 'input',
+        message: 'What is the name of the department?'
+
+    })
+    .then((answer) => {
+        connection.query('INSERT INTO department SET ?', 
+        {name: answer.departmentName}, (err, res) => {
+            if (err) throw err;
+            console.log('Department added');
+            start();
+        })
+    })
+}
 /*
 // function to handle posting new items up for auction
 const postAuction = () => {

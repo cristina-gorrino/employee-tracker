@@ -141,6 +141,65 @@ const addEmployee = () => {
     })
 };
 
+const updateEmployeeRole = () => {
+    connection.query('SELECT * from employee', (err, employeeResults) => {
+        if (err) throw err;
+        connection.query('SELECT * from role', (err, roleResults) => {
+            if (err) throw err;
+            inquirer
+            .prompt([
+                {
+                    name: 'employeeToUpdate',
+                    type: 'list',
+                    message: 'Which employee\'s role do you want to update?',
+                    choices() {
+                        const choiceArray = [];
+                        employeeResults.forEach(({ first_name, last_name }) => {
+                          choiceArray.push(`${first_name} ${last_name}`);
+                        });
+                        return choiceArray;
+                      }
+                },
+                {
+                    name: 'newRole',
+                    type: 'list',
+                    message: 'Which new role should this employee have?',
+                    choices() {
+                        const choiceArray = [];
+                        roleResults.forEach(({title}) => {
+                          choiceArray.push(title);
+                        });
+                        return choiceArray;
+                      }
+                }
+            ])
+            .then((answer) => {
+                var employee_id;
+                var role_id;
+
+                roleResults.forEach((role) => {
+                    if (role.title === answer.newRole){
+                        role_id = role.id;
+                    }
+                })
+    
+                employeeResults.forEach((person) => {
+                    if (`${person.first_name} ${person.last_name}` === answer.employeeToUpdate){
+                        employee_id = person.id;
+                    }
+                })
+                connection.query('UPDATE employee SET ? WHERE ?',
+                [{role_id: role_id}, {id: employee_id}],
+                (err, res) => {
+                    if (err) throw err;
+                    console.log('Successfully updated employee role');
+                    start();
+                })
+            })
+        })
+    })
+};
+
 const addRole = () => {
     connection.query('SELECT * from department', (err, results) => {
         if (err) throw err;

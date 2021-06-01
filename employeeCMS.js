@@ -1,5 +1,6 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
+const cTable = require('console.table');
 
 // create the connection information for the sql database
 const connection = mysql.createConnection({
@@ -32,7 +33,7 @@ const start = () => {
       } else if (answer.menuChoice === '*Add employee') {
         addEmployee();//done
       } else if (answer.menuChoice === '*Update employee role') {
-          updateEmployeeRole();
+          updateEmployeeRole(); //done
       } else if (answer.menuChoice === '*View all roles') {
           viewAllTable('role');//done
       } else if (answer.menuChoice === '*Add role') {
@@ -55,10 +56,13 @@ const viewAllTable = (category) => {
         table,
         (err, results) => {
             if (err) throw err;
-            console.log(results); 
+            console.log('-----------------------------------'); 
+            console.table(results);
+            console.log('-----------------------------------');
+            start();
         }
     )
-    start();
+    
 };
 
 const addEmployee = () => {

@@ -48,6 +48,10 @@ const start = () => {
           deleteRecord('role');
       } else if (answer.menuChoice === 'Remove department') {
           deleteRecord('department');
+      } else if (answer.menuChoice === 'View all employees by department') {
+          viewEmployeesBy('department');
+      } else if (answer.menuChoice === 'View all employees by manager') {
+          viewEmployeesBy('manager');
       }
       else {
         connection.end();
@@ -343,7 +347,72 @@ const deleteRecord = (category) => {
         })
     })
 
-}
+};
+
+const viewEmployeesBy = (category) => {
+    if (category === 'manager'){
+        var query = 'SELECT * from employee WHERE manager_id is null'; 
+    } if (category === 'department') {
+        var query = 'SELECT * from department';
+    }
+
+    connection.query(query, (err, results) => {
+        if (err) throw err;
+        inquirer
+        .prompt([
+            {
+                name: 'viewBy',
+                type: 'list',
+                message: `For which ${category} would you like to see employees?`,
+                choices() {
+                    const choiceArray = [];
+                    if (category === 'manager'){
+                        results.forEach(({ first_name, last_name }) => {
+                            choiceArray.push(`${first_name} ${last_name}`);
+                          });
+                          return choiceArray;
+                    } else if (category === 'department') {
+                        results.forEach(({name}) => {
+                            choiceArray.push(name);
+                        });
+                        return choiceArray;
+                    }
+                }
+            }
+        ])
+        .then((answer) => {
+            var criteria;
+
+            if (category === 'manager') {
+                results.forEach((person) => {
+                    if (`${person.first_name} ${person.last_name}` === answer.viewBy){
+                        criteria = {manager_id: person.id};
+                    }
+                })
+            } else if (category === 'department') {
+                results.forEach((dpt) => {
+                    if (dpt.name === answer.viewBy) {
+                        criteria = {id: dpt.id};
+                    }
+                })
+            }
+            const query = 'SELECT * from employee WHERE ?';
+            connection.query(
+                query,
+                criteria,
+                (err, results) => {
+                    if (err) throw err;
+                    console.log('-----------------------------------'); 
+                    console.table(results);
+                    console.log('-----------------------------------');
+                    start();
+                }
+            )
+        })
+    })
+    
+    
+};
 
 
 // connect to the mysql server and sql database

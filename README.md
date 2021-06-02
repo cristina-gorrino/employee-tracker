@@ -23,6 +23,12 @@
 
 This application allows the user to manage a database of employees, roles and departments by interacting through the console. By choosing from a menu of options the user can view data, create new records, and update existing records.
 
+### Video Demo
+
+Part 1: https://drive.google.com/file/d/1oeLKm0jrzB8bqp9TqWoytAeCpJHd247k/view
+
+Part 2: https://drive.google.com/file/d/1LSfjEm_JaHxkXoYaBlSAb0E3L2ECINm4/view
+
 <a name="installation"></a>
 ## Installation
     

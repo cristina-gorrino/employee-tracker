@@ -52,8 +52,11 @@ const start = () => {
           viewEmployeesBy('department');
       } else if (answer.menuChoice === 'View all employees by manager') {
           viewEmployeesBy('manager');
-      }
-      else {
+      } else if (answer.menuChoice === 'Update employee manager'){
+          updateEmployeeManager();
+      } else if (answer.menuChoice === 'View budget by department') {
+          calculateBudget();
+      } else {
         connection.end();
       }
     });
@@ -215,7 +218,7 @@ const updateEmployeeRole = () => {
     })
 };
 
-const addRole = () => {
+const addRole = () => { 
     connection.query('SELECT * from department', (err, results) => {
         if (err) throw err;
         inquirer
@@ -246,21 +249,20 @@ const addRole = () => {
         ])
         .then((answer) => {
             var department_id;
-            results.forEach((department) => {
-                if (department.name === answer.department){
-                    department_id = department.id;
+            results.forEach((dept) => {
+                if (dept.name === answer.department){
+                    department_id = dept.id;
                 }
-
-            const role = {
-                title: answer.title,
-                salary: answer.salary,
-                department_id: department_id
-            }
-            connection.query('INSERT INTO role SET ?', role, (err, res) => {
-                if (err) throw err;
-                console.log('Role added');
-                start();
-            })
+        })
+        const role = {
+            title: answer.title,
+            salary: answer.salary,
+            department_id: department_id
+        }
+        connection.query('INSERT INTO role SET ?', role, (err, res) => {
+            if (err) throw err;
+            console.log('Role added');
+            start();
         })
     })
 })
@@ -412,6 +414,103 @@ const viewEmployeesBy = (category) => {
     })
     
     
+};
+
+const updateEmployeeManager = () => {
+    connection.query('SELECT * from employee', (err, employeeResults) => {
+        if (err) throw err;
+        connection.query('SELECT * from employee WHERE manager_id is null', (err, managerResults) => {
+            if (err) throw err;
+            inquirer
+            .prompt([
+                {
+                    name: 'employeeToUpdate',
+                    type: 'list',
+                    message: 'Which employee\'s manager do you want to update?',
+                    choices() {
+                        const choiceArray = [];
+                        employeeResults.forEach(({ first_name, last_name }) => {
+                          choiceArray.push(`${first_name} ${last_name}`);
+                        });
+                        return choiceArray;
+                      }
+                },
+                {
+                    name: 'newManager',
+                    type: 'list',
+                    message: 'Which manager should this employee have?',
+                    choices() {
+                        const choiceArray = ['none'];
+                        managerResults.forEach(({first_name, last_name}) => {
+                          choiceArray.push(`${first_name} ${last_name}`);
+                        });
+                        return choiceArray;
+                      }
+                }
+            ])
+            .then((answer) => {
+                var employee_id;
+                var manager_id;
+
+                managerResults.forEach((manager) => {
+                    if (`${manager.first_name} ${manager.last_name}` === answer.newManager){
+                        manager_id = manager.id;
+                    }
+                })
+    
+                employeeResults.forEach((person) => {
+                    if (`${person.first_name} ${person.last_name}` === answer.employeeToUpdate){
+                        employee_id = person.id;
+                    }
+                })
+                connection.query('UPDATE employee SET ? WHERE ?',
+                [{manager_id: manager_id}, {id: employee_id}],
+                (err, res) => {
+                    if (err) throw err;
+                    console.log('Successfully updated employee manager');
+                    start();
+                })
+            })
+        })
+    })
+};
+
+const calculateBudget = () => {
+    connection.query('SELECT * from department', (err, results) => {
+        if (err) throw err;
+        inquirer
+        .prompt([
+            {
+                name: 'department',
+                type: 'list',
+                message: 'For which department would you like to calculate the total utilized budget?',
+                choices() {
+                    const choiceArray = [];
+                    results.forEach(({name}) => {
+                        choiceArray.push(name);
+                    });
+                    return choiceArray;
+                }
+            }
+        ])
+        .then((answer) => {
+            var department_id;
+            results.forEach((dept) => {
+                if (dept.name === answer.department){
+                    department_id = dept.id;
+                }
+            })
+            connection.query('SELECT sum(salary) as tot_department_budget from role WHERE ?',
+            {department_id: department_id},
+            (err, res) => {
+                if (err) throw err;
+                console.log('-----------------------------------'); 
+                console.table(res);
+                console.log('-----------------------------------');
+                start();
+            } )
+        })
+    })
 };
 
 

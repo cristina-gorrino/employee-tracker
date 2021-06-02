@@ -24,25 +24,32 @@ const start = () => {
       name: 'menuChoice',
       type: 'list',
       message: 'What would you like to do?',
-      choices: ['*View all employees', 'View all employees by department', 'View all employees by manager', '*Add employee', 'Remove employee', '*Update employee role', 'Update employee manager', '*View all roles', '*Add role', 'Delete role', '*View all departments', '*Add department', 'Delete department', 'View budget by department', 'Exit'],
+      choices: ['*View all employees', 'View all employees by department', 'View all employees by manager', '*Add employee', 'Remove employee', '*Update employee role', 'Update employee manager', '*View all roles', '*Add role', 'Remove role', '*View all departments', '*Add department', 'Remove department', 'View budget by department', 'Exit'],
     })
     .then((answer) => {
       // TODO: Starred options are required. Need to add all options on the menu
       if (answer.menuChoice === '*View all employees') {
-        viewAllTable('employee');//done
+        viewAllTable('employee');
       } else if (answer.menuChoice === '*Add employee') {
-        addEmployee();//done
+        addEmployee();
       } else if (answer.menuChoice === '*Update employee role') {
-          updateEmployeeRole(); //done
+          updateEmployeeRole(); 
       } else if (answer.menuChoice === '*View all roles') {
-          viewAllTable('role');//done
+          viewAllTable('role');
       } else if (answer.menuChoice === '*Add role') {
-          addRole();//done
+          addRole();
       } else if (answer.menuChoice === '*View all departments') {
-          viewAllTable('department');//done
+          viewAllTable('department');
       } else if (answer.menuChoice === '*Add department') {
-          addDepartment();//done
-      } else {
+          addDepartment();
+      } else if (answer.menuChoice === 'Remove employee') {
+          deleteRecord('employee');
+      } else if (answer.menuChoice === 'Remove role') {
+          deleteRecord('role');
+      } else if (answer.menuChoice === 'Remove department') {
+          deleteRecord('department');
+      }
+      else {
         connection.end();
       }
     });
@@ -272,6 +279,71 @@ const addDepartment = () => {
         })
     })
 };
+
+const deleteRecord = (category) => {
+    let table = category;
+    connection.query('SELECT * from ??', table, (err, results) => {
+        if (err) throw error;
+        inquirer
+        .prompt([
+            {
+                name: 'recordToDelete',
+                type: 'list',
+                message: `Which ${table} would you like to remove?`,
+                choices() {
+                    const choiceArray = [];
+                    if (table === 'employee'){
+                        results.forEach(({ first_name, last_name }) => {
+                            choiceArray.push(`${first_name} ${last_name}`);
+                          });
+                          return choiceArray;
+                    } else if (table === 'role') {
+                        results.forEach(({title}) => {
+                            choiceArray.push(title);
+                        });
+                        return choiceArray;
+                    } else if (table === 'department') {
+                        results.forEach(({name}) => {
+                            choiceArray.push(name);
+                        });
+                        return choiceArray;
+                    }
+                }
+            }
+        ])
+        .then((answer) => {
+            var recordReference;
+
+            if (table === 'role'){
+                results.forEach((role) => {
+                    if (role.title === answer.recordToDelete){
+                        recordReference = role.id;
+                    }
+                })
+            } else if (table === 'employee') {
+                results.forEach((person) => {
+                    if (`${person.first_name} ${person.last_name}` === answer.recordToDelete){
+                        recordReference = person.id;
+                    }
+                })
+            } else if (table === 'department') {
+                results.forEach((dpt) => {
+                    if (dpt.name === answer.recordToDelete) {
+                        recordReference = dpt.id;
+                    }
+                })
+            }
+            connection.query('DELETE from ?? WHERE ?',
+            [table, {id: recordReference}],
+            (err, res) => {
+                if (err) throw err;
+                console.log('Record successfully removed');
+                start();
+            })
+        })
+    })
+
+}
 
 
 // connect to the mysql server and sql database

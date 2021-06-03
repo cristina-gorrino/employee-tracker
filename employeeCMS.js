@@ -62,8 +62,24 @@ const start = () => {
     });
 };
 
+// Note: My application makes the assumption that all employees with no assigned manager are managers
 const viewAllTable = (category) => {
-    const query = 'SELECT * from ??';
+    if (category === 'employee') {
+        
+        var query = `
+        WITH managers as (
+            SELECT id, first_name, last_name from employee WHERE manager_id is null
+        ) 
+        SELECT employee.id as id, employee.first_name as first_name, employee.last_name as last_name,
+         role.title as title, department.name as department, role.salary as salary, concat(managers.first_name, " ", managers.last_name) as manager
+         FROM employee
+         LEFT JOIN role on employee.role_id = role.id
+         LEFT JOIN department on role.department_id = department.id
+         LEFT JOIN managers on employee.manager_id = managers.id`;
+    } else {
+        var query = 'SELECT * from ??';
+    }
+    
     let table = category
     connection.query(
         query,
